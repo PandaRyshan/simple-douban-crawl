@@ -43,3 +43,72 @@ to other fixed lines in Bangalore."
 """
 
 
+def get_number_prefix(calls_list):
+    """
+    param: list. Your calls list.
+    return: list. The prefix list.
+    """
+    result = set()
+    number_type = None
+    caller = None
+    called = None
+    for call in calls_list:
+        caller = str(call[0])
+        called = str(call[1])
+        number_type = number_type_filter(called)
+        if caller.startswith("(080)"):
+            if number_type == "telephone":
+                result.add(called[1:4])
+            elif (number_type == "mobile") or (number_type == "sales"):
+                result.add(called[:4])
+    if result is not None:
+        result = list(result)
+        result.sort()
+        return result
+    else:
+        return None
+
+
+def number_type_filter(phone_number):
+    """
+    filte the phone_number's type
+
+    param: string. Your phone number
+    return: string. "telephone", "mobile", "sales"
+    """
+    if str(phone_number).startswith("(0"):
+        return "telephone"
+    elif " " in str(phone_number) and (
+            str(phone_number).startswith("7") or
+            str(phone_number).startswith("8") or
+            str(phone_number).startswith("9")
+    ):
+        return "mobile"
+    elif str(phone_number).startswith("140"):
+        return "sales"
+    return None
+
+
+def print_anwser1():
+    """ print the Q1 """
+    print("The numbers called by people in Bangalore have codes:")
+    for prefix in get_number_prefix(calls):
+        print(prefix)
+
+
+def count_ratio(calls_list):
+    """ count the ratio """
+    count_all = len(calls_list)
+    count_condition = 0
+    caller = None
+    called = None
+    for call in calls_list:
+        caller = str(call[0])
+        called = str(call[1])
+        if caller.startswith("(080)") and called.startswith("(080)"):
+            count_condition += 1
+    return round(count_condition / count_all, 2)
+
+
+print_anwser1()
+print(count_ratio(calls))
