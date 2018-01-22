@@ -59,7 +59,7 @@ def get_number_prefix(calls_list):
         if caller.startswith("(080)"):
             if number_type == "telephone":
                 result.add(called[1:4])
-            elif (number_type == "mobile") or (number_type == "sales"):
+            elif number_type == "mobile":
                 result.add(called[:4])
     if result is not None:
         result = list(result)
@@ -84,8 +84,8 @@ def number_type_filter(phone_number):
             str(phone_number).startswith("9")
     ):
         return "mobile"
-    elif str(phone_number).startswith("140"):
-        return "sales"
+    # elif str(phone_number).startswith("140"):
+    #     return "sales"
     return None
 
 
