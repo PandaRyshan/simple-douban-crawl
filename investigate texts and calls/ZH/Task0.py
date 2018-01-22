@@ -21,6 +21,7 @@ with open(sys.path[0] + '\\calls.csv', 'r') as f:
 """
 text_1 = texts[0]
 call_1 = calls[-1]
-print("First record of texts, " + text_1[0] + " texts " + text_1[1] + " at time " + text_1[2])
+print("First record of texts, " +
+      text_1[0] + " texts " + text_1[1] + " at time " + text_1[2])
 print("Last record of calls, {} calls {} at time {}, lasting {} seconds"
       .format(call_1[0], call_1[1], call_1[2], call_1[3]))

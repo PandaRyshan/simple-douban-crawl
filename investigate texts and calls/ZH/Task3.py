@@ -2,13 +2,15 @@
 下面的文件将会从csv文件中读取读取短信与电话记录，
 你将在以后的课程中了解更多有关读取文件的知识。
 """
-import csv
 
-with open('texts.csv', 'r') as f:
+import csv
+import sys
+
+with open(sys.path[0] + '\\texts.csv', 'r') as f:
     reader = csv.reader(f)
     texts = list(reader)
 
-with open('calls.csv', 'r') as f:
+with open(sys.path[0] + '\\calls.csv', 'r') as f:
     reader = csv.reader(f)
     calls = list(reader)
 
@@ -39,3 +41,5 @@ with open('calls.csv', 'r') as f:
 to other fixed lines in Bangalore."
 注意：百分比应包含2位小数。
 """
+
+

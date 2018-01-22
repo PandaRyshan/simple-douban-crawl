@@ -29,4 +29,5 @@ for line in calls:
     phone_num_count.add(line[0])
     phone_num_count.add(line[1])
 
-print("There are {} different telephone numbers in the records.".format(len(phone_num_count)))
+print("There are {} different telephone numbers in the records.".format(
+    len(phone_num_count)))

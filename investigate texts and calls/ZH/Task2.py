@@ -24,3 +24,43 @@ September 2016.".
 如果键不存在于字典内，将此键加入字典，并将它的值设为给定值。
 """
 
+
+def duration_counts(call_list):
+    result_list = []
+    call_dict = {}
+    max_time = 0
+
+    for call in call_list:
+        if call[0] in call_dict:
+            call_dict[call[0]] += int(call[3])
+        else:
+            call_dict[call[0]] = int(call[3])
+
+        if call[1] in call_dict:
+            call_dict[call[1]] += int(call[3])
+        else:
+            call_dict[call[1]] = int(call[3])
+
+    for phone_number in call_dict:
+        if call_dict[phone_number] > max_time:
+            max_time = call_dict[phone_number]
+            result_list.clear()
+            result_list.append(phone_number)
+        elif call_dict[phone_number] == max_time:
+            result_list.append(phone_number)
+
+    result_list.append(max_time)
+
+    return result_list
+
+
+desc_str = "{} spent the longest time, {} seconds, on the phone during September 2016."
+results = duration_counts(calls)
+if results != None:
+    phone_str = ""
+    for i in range(len(results) - 1):
+        if i == 0:
+            phone_str += results[i]
+        else:
+            phone_str += ", " + results[i]
+    print(desc_str.format(phone_str, results[-1]))
