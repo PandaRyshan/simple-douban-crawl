@@ -43,9 +43,9 @@ def filter_sales_number(texts_list, calls_list):
         called_set.add(str(call[1]))
 
     for number in caller_set:
-        if (number not in text_number_set) or (number not in called_set):
+        if (number not in text_number_set) and (number not in called_set):
             sales_list.append(number)
-    return sales_list
+    return sorted(sales_list, reverse=False)
 
 
 print("These numbers could be telemarketers: ")

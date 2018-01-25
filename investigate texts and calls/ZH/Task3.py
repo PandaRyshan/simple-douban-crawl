@@ -52,13 +52,16 @@ def get_number_prefix(calls_list):
     number_type = None
     caller = None
     called = None
+    # rule = str.maketrans("()", "  ")
+
     for call in calls_list:
         caller = str(call[0])
         called = str(call[1])
         number_type = number_type_filter(called)
         if caller.startswith("(080)"):
             if number_type == "telephone":
-                result.add(called[1:4])
+                called = called[0: called.find(")")]
+                result.add(called.replace("(", ""))
             elif number_type == "mobile":
                 result.add(called[:4])
     if result is not None:
@@ -98,17 +101,22 @@ def print_anwser1():
 
 def count_ratio(calls_list):
     """ count the ratio """
-    count_all = len(calls_list)
+    count_all = 0
     count_condition = 0
     caller = None
     called = None
     for call in calls_list:
         caller = str(call[0])
         called = str(call[1])
-        if caller.startswith("(080)") and called.startswith("(080)"):
-            count_condition += 1
-    return round(count_condition / count_all, 2)
+        if caller.startswith("(080)"):
+            count_all += 1
+            if called.startswith("(080)"):
+                count_condition += 1
+    return round(count_condition / count_all * 100, 2)
 
 
 print_anwser1()
-print(count_ratio(calls))
+
+out_info = "{} percent of calls from fixed lines in Bangalore"
+out_info += " are calls to other fixed lines in Bangalore."
+print(out_info.format(str(count_ratio(calls))))

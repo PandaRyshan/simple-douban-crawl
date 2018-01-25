@@ -174,27 +174,32 @@ def build_movie_dict():
 
 def analyse_data(tuple_of_dict):
     """analyse the data
-    统计你所选取的每个电影类别中，数量排名前三的地区有哪些，分别占此类别电影总数的百分比为多少
-    将你的结果输出文件 `output.txt`
-    """
-    category_dict, category_location_dict = tuple_of_dict
-    items = category_location_dict.items()
 
+    参考1：https://goo.gl/t3LDxH (python doc -- Sorting HOW TO)
+    参考2：https://goo.gl/Q1JWsf (廖雪峰博客 -- 高阶函数 -- sorted)
+    print(sorted(location_num_dict.items(), key=itemgetter(1), reverse=True))
+    print(sorted(location_num_dict.items(), key=lambda t: t[1], reverse=True))
+    目前还没有理解lambda的使用，如果不使用这两种方法，在本题目中如何给dict排序呢？
+    我开始的思路是用两个list分别存dict的key和value，
+    从value的list中查询排名前三的值的index，这样就能取到对应的key了，但是这样也太蠢了...
+    """
+    category_num_dict, category_location_dict = tuple_of_dict
+    items = category_location_dict.items()
+    location_num_dict = None
+    result_list = None
+    item_num = 0
     with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as target:
         for item in items:
-            location_dict = item[1]
-            # print(sorted(location_dict.items(), key=itemgetter(1), reverse=True))
-            # print(sorted(location_dict.items(), key=lambda t: t[1], reverse=True))
-            # 这里如果不使用这两种方法，如何给sort方法传递合适的key呢？
-
-            item_num = category_dict.get(item[0])
+            location_num_dict = item[1]
+            item_num = category_num_dict.get(item[0])
             target.write(str(item[0]) + ": ")
-            result_list = sorted(location_dict.items(), key=lambda t: t[1], reverse=True)
+            result_list = sorted(location_num_dict.items(), key=lambda t: t[1], reverse=True)
             result_list = result_list[0:3]
             for r in result_list:
                 target.write("({}, {}, {}%)".format(
                     str(r[0]), str(r[1]), round(r[1] / item_num * 100, 2)))
             target.write("\n")
+    print("计算并写入完成")
 
 
 def start_fetch(category_list, location_list):
@@ -210,7 +215,7 @@ def start_fetch(category_list, location_list):
                                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
                     spamwriter.writerow([m.get_name(), m.get_rate(), m.get_location(),
                                          m.get_category(), m.get_info_link(), m.get_cover_link()])
-
+    print("获取数据并写入完成")
 
 # start_fetch(["喜剧", "剧情", "动作"], get_all_locations())
 analyse_data(build_movie_dict())
