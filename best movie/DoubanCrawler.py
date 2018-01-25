@@ -2,10 +2,10 @@
 get the movie list on movie.douban.com.
 """
 import sys
-import requests
 import csv
 from bs4 import BeautifulSoup
 import expanddouban
+from operator import itemgetter
 
 
 def get_movie_url(category="", location=""):
@@ -27,7 +27,7 @@ def get_movie_url(category="", location=""):
 
 
 class Movie(object):
-    """ a movie class """
+    """ movie class """
     __name = ""
     __rate = ""
     __category = ""
@@ -96,7 +96,10 @@ class Movie(object):
 
 
 def get_movies(category="", location=""):
-    """get the movie list you want"""
+    """get the movie list you want
+    category -- movie's category str()
+    location -- movie's location str()
+    """
     movie_list = []
     movie = None
 
@@ -118,21 +121,96 @@ def get_movies(category="", location=""):
     return movie_list
 
 
-with open(sys.path[0] + "\\movies.csv", "w", encoding="utf-8", newline="") as target:
-    for m in get_movies("喜剧"):
-        spamwriter = csv.writer(target, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow([m.get_name(), m.get_rate(), m.get_location(),
-                             m.get_category(), m.get_info_link(), m.get_cover_link()])
+def get_all_locations():
+    """get all available locations"""
+    location_list = []
+    html = expanddouban.getHtml("https://movie.douban.com/tag")
+    soup = BeautifulSoup(html, "html.parser")
+    category_tag_list = soup.find(id="content").find(class_="tags").contents[2].contents
+    for index in range(1, len(category_tag_list)):
+        location_list.append(str(category_tag_list[index].span.string))
+    return location_list
 
-    for m in get_movies("剧情"):
-        spamwriter = csv.writer(target, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow([m.get_name(), m.get_rate(), m.get_location(),
-                             m.get_category(), m.get_info_link(), m.get_cover_link()])
 
-    for m in get_movies("动作"):
-        spamwriter = csv.writer(target, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow([m.get_name(), m.get_rate(), m.get_location(),
-                             m.get_category(), m.get_info_link(), m.get_cover_link()])
+def build_movie_dict():
+    """build two movie subtotal dict"""
+    movie_list = []
+    with open(sys.path[0] + "\\movies.csv", "r", encoding="utf-8", newline="") as target:
+        reader = csv.reader(target, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        # translate all data to the Movie object list
+        movie = None
+        for row in reader:
+            movie = Movie(row[0], row[1], row[2], row[3])
+            movie_list.append(movie)
+
+    # group movies by category, calculate subtotal
+    category_dict = {}
+
+    # group movies by category & location, calculate subtotal
+    category_location_dict = {}
+    category = ""
+    location = ""
+
+    for movie in movie_list:
+        category = movie.get_category()
+        location = movie.get_location()
+
+        if category in category_dict:
+            category_dict[category] += 1
+        else:
+            category_dict[category] = 1
+
+        if category in category_location_dict:
+            if location in category_location_dict[category]:
+                category_location_dict[category][location] += 1
+            else:
+                category_location_dict[category][location] = 1
+        else:
+            category_location_dict[category] = {location: 1}
+
+    return (category_dict, category_location_dict)
+
+
+def analyse_data(tuple_of_dict):
+    """analyse the data
+    统计你所选取的每个电影类别中，数量排名前三的地区有哪些，分别占此类别电影总数的百分比为多少
+    将你的结果输出文件 `output.txt`
+    """
+    category_dict, category_location_dict = tuple_of_dict
+    items = category_location_dict.items()
+
+    with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as target:
+        for item in items:
+            location_dict = item[1]
+            # print(sorted(location_dict.items(), key=itemgetter(1), reverse=True))
+            # print(sorted(location_dict.items(), key=lambda t: t[1], reverse=True))
+            # 这里如果不使用这两种方法，如何给sort方法传递合适的key呢？
+
+            item_num = category_dict.get(item[0])
+            target.write(str(item[0]) + ": ")
+            result_list = sorted(location_dict.items(), key=lambda t: t[1], reverse=True)
+            result_list = result_list[0:3]
+            for r in result_list:
+                target.write("({}, {}, {}%)".format(
+                    str(r[0]), str(r[1]), round(r[1] / item_num * 100, 2)))
+            target.write("\n")
+
+
+def start_fetch(category_list, location_list):
+    """ fetch data and write data to the csv file
+    argument:
+    category_list -- [str, str, ...]
+    """
+    with open(sys.path[0] + "\\movies.csv", "w", encoding="utf-8", newline="") as target:
+        for category in category_list:
+            for location in location_list:
+                for m in get_movies(category, location):
+                    spamwriter = csv.writer(target, delimiter=',',
+                                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    spamwriter.writerow([m.get_name(), m.get_rate(), m.get_location(),
+                                         m.get_category(), m.get_info_link(), m.get_cover_link()])
+
+
+# start_fetch(["喜剧", "剧情", "动作"], get_all_locations())
+analyse_data(build_movie_dict())
