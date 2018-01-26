@@ -5,7 +5,7 @@ import sys
 import csv
 from bs4 import BeautifulSoup
 import expanddouban
-from operator import itemgetter
+# from operator import itemgetter
 
 
 def getMovieUrl(category="", location=""):
@@ -41,8 +41,7 @@ def getMovies(category_list="", location_list=""):
     location -- movie's location str()
     """
     with open(sys.path[0] + "\\movies.csv", "w", encoding="utf-8", newline="") as target:
-        spamwriter = csv.writer(target, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+        spamwriter = csv.writer(target, delimiter=',')
         for cat in category_list:
             for loc in location_list:
                 html = expanddouban.getHtml(getMovieUrl(cat, loc), True)
@@ -73,66 +72,78 @@ def get_all_locations():
     return location_list
 
 
-def build_movie_dict():
+def analyse_data(category_list, location_list):
     """read data from movies.csv, build two movie subtotal dict"""
-    movie_list = []
+    def percent(total_by_loc, total_by_cat):
+        """get percent"""
+        pct = '%.2f%%' % (total_by_loc / total_by_cat * 100)
+        return pct
+
     with open(sys.path[0] + "\\movies.csv", "r", encoding="utf-8", newline="") as target:
-        reader = csv.reader(target, delimiter=',',
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        # translate all data to the Movie object list
-        movie = None
-        for row in reader:
-            movie = Movie(row[0], row[1], row[2], row[3], row[4], row[5])
-            movie_list.append(movie)
+        reader = csv.reader(target, delimiter=',')
+        movie_list = list(reader)
 
-    # group movies by category, calculate subtotal
-    category_dict = {}
+    msg = '{}电影数量排名前三的地区是{},{},{}, 分别占此类电影总数的百分比为{},{},{}. \n'
 
-    # group movies by category & location, calculate subtotal
-    category_location_dict = {}
-    category = ""
-    location = ""
+    with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as f:
+        for cat in category_list:
+            temp = []
+            total_by_cat = 0
+            for loc in location_list:
+                total_by_loc = 0
+                for movie in movie_list:
+                    if movie[3] == cat and movie[2] == loc:
+                        total_by_cat += 1
+                        total_by_loc += 1
+                temp.append((loc, total_by_loc))
+                temp = sorted(temp, key=lambda t: t[1], reverse=True)
 
-    for movie in movie_list:
-        category = movie.get_category()
-        location = movie.get_location()
+            ratio = []
+            for i in range(3):
+                ratio.append(percent(temp[i][1], total_by_cat))
+            print(msg.format(cat, temp[0][0], temp[1]
+                             [0], temp[2][0], ratio[0], ratio[1], ratio[2]))
+            f.write(msg.format(cat, temp[0][0], temp[1]
+                               [0], temp[2][0], ratio[0], ratio[1], ratio[2]))
 
-        if category in category_dict:
-            category_dict[category] += 1
-        else:
-            category_dict[category] = 1
+    # for movie in movie_list:
+    #     category = movie.category
+    #     location = movie.location
 
-        if category in category_location_dict:
-            if location in category_location_dict[category]:
-                category_location_dict[category][location] += 1
-            else:
-                category_location_dict[category][location] = 1
-        else:
-            category_location_dict[category] = {location: 1}
+    #     if category in category_dict:
+    #         category_dict[category] += 1
+    #     else:
+    #         category_dict[category] = 1
 
-    return (category_dict, category_location_dict)
+    #     if category in category_location_dict:
+    #         if location in category_location_dict[category]:
+    #             category_location_dict[category][location] += 1
+    #         else:
+    #             category_location_dict[category][location] = 1
+    #     else:
+    #         category_location_dict[category] = {location: 1}
 
-
-def analyse_data(tuple_of_dict):
-    """analyse the data"""
-    category_num_dict, category_location_dict = tuple_of_dict
-    items = category_location_dict.items()
-    location_num_dict = None
-    result_list = None
-    item_num = 0
-    with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as target:
-        for item in items:
-            location_num_dict = item[1]
-            item_num = category_num_dict.get(item[0])
-            target.write(str(item[0]) + ": ")
-            result_list = sorted(location_num_dict.items(),
-                                 key=lambda t: t[1], reverse=True)
-            result_list = result_list[0:3]
-            for r in result_list:
-                target.write("({}, {}, {}%)".format(
-                    str(r[0]), str(r[1]), round(r[1] / item_num * 100, 2)))
-            target.write("\n")
+    # items = category_location_dict.items()
+    # location_num_dict = {}
+    # result_list = []
+    # item_num = 0
+    # with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as target:
+    #     for item in items:
+    #         location_num_dict = item[1]
+    #         item_num = category_dict.get(item[0])
+    #         target.write(str(item[0]) + ": ")
+    #         result_list = sorted(location_num_dict.items(),
+    #                              key=lambda t: t[1], reverse=True)
+    #         result_list = result_list[0:3]
+    #         for r in result_list:
+    #             target.write("({}, {}, {}%)".format(
+    #                 str(r[0]), str(r[1]), round(r[1] / item_num * 100, 2)))
+    #         target.write("\n")
 
 
-getMovies(["喜剧", "剧情", "动作"], get_all_locations())
-analyse_data(build_movie_dict())
+# locations = get_all_locations()
+categories = ["喜剧", "剧情", "动作"]
+locations = ['大陆', '美国', '香港', '台湾', '日本', '韩国', '英国', '法国', '德国', '意大利',
+             '西班牙', '印度', '泰国', '俄罗斯', '伊朗', '加拿大', '澳大利亚', '爱尔兰', '瑞典', '巴西', '丹麦']
+# getMovies(["喜剧", "剧情", "动作"], locations)
+analyse_data(categories, locations)
