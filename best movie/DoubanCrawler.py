@@ -76,14 +76,14 @@ def analyse_data(category_list, location_list):
     """read data from movies.csv, build two movie subtotal dict"""
     def percent(total_by_loc, total_by_cat):
         """get percent"""
-        pct = '%.2f%%' % (total_by_loc / total_by_cat * 100)
+        pct = "%.2f%%" % (total_by_loc / total_by_cat * 100)
         return pct
 
     with open(sys.path[0] + "\\movies.csv", "r", encoding="utf-8", newline="") as target:
         reader = csv.reader(target, delimiter=',')
         movie_list = list(reader)
 
-    msg = '{}电影数量排名前三的地区是{},{},{}, 分别占此类电影总数的百分比为{},{},{}. \n'
+    msg = "{}电影数量排名前三的地区是{},{},{}, 分别占此类电影总数的百分比为{},{},{}. \n"
 
     with open(sys.path[0] + "\\output.txt", "w", encoding="utf-8", newline="") as f:
         for cat in category_list:
@@ -141,9 +141,9 @@ def analyse_data(category_list, location_list):
     #         target.write("\n")
 
 
-# locations = get_all_locations()
+locations = get_all_locations()
 categories = ["喜剧", "剧情", "动作"]
-locations = ['大陆', '美国', '香港', '台湾', '日本', '韩国', '英国', '法国', '德国', '意大利',
-             '西班牙', '印度', '泰国', '俄罗斯', '伊朗', '加拿大', '澳大利亚', '爱尔兰', '瑞典', '巴西', '丹麦']
-# getMovies(["喜剧", "剧情", "动作"], locations)
+# locations = ['大陆', '美国', '香港', '台湾', '日本', '韩国', '英国', '法国', '德国', '意大利',
+#              '西班牙', '印度', '泰国', '俄罗斯', '伊朗', '加拿大', '澳大利亚', '爱尔兰', '瑞典', '巴西', '丹麦']
+getMovies(categories, locations)
 analyse_data(categories, locations)
